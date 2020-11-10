@@ -3,6 +3,11 @@ import preprocessor
 import numpy as np
 import math
 
+<# This python module's aim is to propose a set of models for the context retrieval task.
+
+
+# TF-IDF model :
+
 def computeTF_text(tokenized_text):
     f_dist = nltk.FreqDist(tokenized_text)
     for word in f_dist:
@@ -34,14 +39,16 @@ def compute_TF_IDF(documents, words):
     
     return tf_idf.sum(axis = 0)
 
-def most_likely_context(question, contexts):
+def tfidf_most_likely_context(question, contexts):
     tf_idf_mesures = compute_TF_IDF(contexts, question)
     return np.argmax(tf_idf_mesures)
 
-def predict_new_instances(instances, contexts, preprocessor):
+def tfidf_predict_new_instances(instances, contexts, preprocessor):
     preprocessed_questions_data_set = preprocessor.transform(instances)
     preprocessed_contexts_data_set = preprocessor.transform(contexts)
-    return [most_likely_context(preprocessed_instance, preprocessed_contexts_data_set) for preprocessed_instance in preprocessed_questions_data_set]
+    return [tfidf_most_likely_context(preprocessed_instance, preprocessed_contexts_data_set) for preprocessed_instance in preprocessed_questions_data_set]
+
+# Compute the accuracy of a set of predictions:
 
 def compute_accuracy(predictions, labels):
     return np.sum(predictions == labels)/len(labels)

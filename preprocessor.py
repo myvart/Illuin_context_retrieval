@@ -9,6 +9,15 @@ nltk.download('stopwords')
 s_words = stopwords.words('french')
 
 
+# This python module aims to propose a custom scikit-learn transformer class which automate the preprocessing steps for
+# the task of context retrieval.
+# The constructor's hyperparameters are:
+#   - remove_most_frequent : boolean (default value = False) if True, the most common tokens in the corpus to fit are removed
+#                            from the vocabulary (after elimination of symbols and stop words)
+#   - most_common_threshold : integer (default value = 100) determines the number of common tokens to remove if remove_most_common = True
+#   - lemmetize : boolean (default value = False) if True, the preprocessor use a lemmetize the set of tokens before computing the
+#                 frequency distribution of the tokens and the vocabulary 
+
 class CorpusPreprocessor(BaseEstimator, TransformerMixin):
     
     def __init__(self, remove_most_frequent = False, most_common_threshold = 100, lemmetize = False):
@@ -65,6 +74,8 @@ class CorpusPreprocessor(BaseEstimator, TransformerMixin):
         return [CorpusPreprocessor.lemmetize_instance(tokenized_instance, lemmetizer) for tokenized_instance in tokenized_data_set]
 
     def fit(self, X, y = None):
+        # X is an array-like containers of string objects (non-tokenized instances)
+
         X_preprocessed = CorpusPreprocessor.remove_stop_words(CorpusPreprocessor.tokenize(CorpusPreprocessor.lower_data_set(CorpusPreprocessor.remove_symbols(X))))
         if self.lemmetize:
             lemmetizer = spacy.load('fr_core_news_sm')
@@ -72,6 +83,8 @@ class CorpusPreprocessor(BaseEstimator, TransformerMixin):
         self.vocab = CorpusPreprocessor.compute_vocab(X_preprocessed, self.remove_most_frequent, self.most_common_threshold)
         
     def transform(self, X, y = None):
+    # X is an array-like containers of string objects (non-tokenized instances)
+
         X_preprocessed = CorpusPreprocessor.remove_stop_words(CorpusPreprocessor.tokenize(CorpusPreprocessor.lower_data_set(CorpusPreprocessor.remove_symbols(X))))
         if self.lemmetize:
             lemmetizer = spacy.load('fr_core_news_sm')
