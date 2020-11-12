@@ -10,6 +10,7 @@ train_set_file_path = os.path.join(os.getcwd(), "train_set", "train.json")
 with open(train_set_file_path, encoding='utf-8') as json_file:
     questions_corpus_train, contexts_corpus_train, questions_set_val, contexts_corpus_val, val_labels = load_data_tk.load_data_train_set(json_file, test_size = 0.2)
 
+print('\n\n-------------------------------------------------------------------------')
 print(f'length questions_corpus_train = {len(questions_corpus_train)}')
 print(f'length contexts_corpus_train = {len(contexts_corpus_train)}')
 print(f'length questions_set_val = {len(questions_set_val)}')
@@ -23,21 +24,45 @@ test_set_file_path = os.path.join(os.getcwd(), "validation_set", "valid.json")
 with open(test_set_file_path, encoding='utf-8') as json_file:
     questions_set_test, contexts_corpus_test, test_labels = load_data_tk.load_data_test_set(json_file)
 
+print('\n\n-------------------------------------------------------------------------')
 print(f'length questions_set_test = {len(questions_set_test)}')
 print(f'length contexts_corpus_test = {len(contexts_corpus_test)}')
 print(f'length test_labels = {len(test_labels)}')
 
-# fit the custom preprocessor with the data (questions + contexts) of the training set: 
+# fit the custom preprocessors for unigrams and bigrams with the data (questions + contexts) of the training set: 
 
-preprocessor = preprocessor.CorpusPreprocessor(remove_most_frequent = True, most_common_threshold = 100, lemmetize = True)
-preprocessor.fit(questions_corpus_train + contexts_corpus_train)
+unigram_preprocessor = preprocessor.CorpusPreprocessor(remove_most_common = False, lemmetize = False, ngrams = 1)
+unigram_preprocessor.fit(questions_corpus_train + contexts_corpus_train)
 
-# make predictions on the validation set questions using a tf-idf model: 
+bigram_preprocessor = preprocessor.CorpusPreprocessor(remove_most_common = False, lemmetize = False, ngrams = 2)
+bigram_preprocessor.fit(questions_corpus_train + contexts_corpus_train)
 
-predictions = models.tfidf_predict_new_instances(questions_set_val, contexts_corpus_val, preprocessor)
+# make predictions on the validation set questions using a mixt tf-idf model: 
+
+predictions, t_pred = models.mixt_model_predict_new_instances(questions_set_val, contexts_corpus_val, unigram_preprocessor, bigram_preprocessor, 3)
 
 # compute the accuracy mesure for the built tf-idf model :
 
 acc = models.compute_accuracy(predictions, val_labels)
 
+print('\n\n-------------------------------------------------------------------------')
 print(f'val accuracy ---> {acc}')
+print(f'mean prediction time ---> {t_pred}')
+
+# Retrain the final model on the whole fquad train data_set :
+
+unigram_preprocessor = preprocessor.CorpusPreprocessor(remove_most_common = False, lemmetize = False, ngrams = 1)
+unigram_preprocessor.fit(questions_corpus_train + contexts_corpus_train + list(set(questions_set_val)) + contexts_corpus_val)
+
+bigram_preprocessor = preprocessor.CorpusPreprocessor(remove_most_common = False, lemmetize = False, ngrams = 2)
+bigram_preprocessor.fit(questions_corpus_train + contexts_corpus_train + list(set(questions_set_val)) + contexts_corpus_val)
+
+
+# compute test accuracy:
+
+predictions, t_pred = models.mixt_model_predict_new_instances(questions_set_test, contexts_corpus_test, unigram_preprocessor, bigram_preprocessor, 3)
+acc = models.compute_accuracy(predictions, test_labels)
+
+print('\n\n-------------------------------------------------------------------------')
+print(f'test accuracy ---> {acc}')
+print(f'mean prediction time ---> {t_pred}')
