@@ -39,14 +39,16 @@ bigram_preprocessor.fit(questions_corpus_train + contexts_corpus_train)
 
 # make predictions on the validation set questions using a mixt tf-idf model: 
 
-predictions, t_pred = models.mixt_model_predict_new_instances(questions_set_val, contexts_corpus_val, unigram_preprocessor, bigram_preprocessor, 3)
+predictions, t_pred = models.mixt_model_predict_new_instances(questions_set_val, contexts_corpus_val, unigram_preprocessor, bigram_preprocessor, 3, predict_n = 5)
 
 # compute the accuracy mesure for the built tf-idf model :
 
-acc = models.compute_accuracy(predictions, val_labels)
+TOP_1_acc = models.compute_TOP1_accuracy([pred[0] for pred in predictions], val_labels)
+TOP_5_acc = models.compute_TOPN_accuracy(predictions, val_labels)
 
 print('\n\n-------------------------------------------------------------------------')
-print(f'val accuracy ---> {acc}')
+print(f'val TOP1_accuracy ---> {TOP_1_acc}')
+print(f'val TOP5_accuracy ---> {TOP_5_acc}')
 print(f'mean prediction time ---> {t_pred}')
 
 # Retrain the final model on the whole fquad train data_set :
@@ -60,9 +62,11 @@ bigram_preprocessor.fit(questions_corpus_train + contexts_corpus_train + list(se
 
 # compute test accuracy:
 
-predictions, t_pred = models.mixt_model_predict_new_instances(questions_set_test, contexts_corpus_test, unigram_preprocessor, bigram_preprocessor, 3)
-acc = models.compute_accuracy(predictions, test_labels)
+predictions, t_pred = models.mixt_model_predict_new_instances(questions_set_test, contexts_corpus_test, unigram_preprocessor, bigram_preprocessor, 3, predict_n = 5)
+TOP_1_acc = models.compute_TOP1_accuracy([pred[0] for pred in predictions], test_labels)
+TOP_5_acc = models.compute_TOPN_accuracy(predictions, val_labels)
 
 print('\n\n-------------------------------------------------------------------------')
-print(f'test accuracy ---> {acc}')
+print(f'test TOP1_accuracy ---> {TOP_1_acc}')
+print(f'test TOP5_accuracy ---> {TOP_5_acc}')
 print(f'mean prediction time ---> {t_pred}')
