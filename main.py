@@ -64,7 +64,7 @@ bigram_preprocessor.fit(questions_corpus_train + contexts_corpus_train + list(se
 
 predictions, t_pred = models.mixt_model_predict_new_instances(questions_set_test, contexts_corpus_test, unigram_preprocessor, bigram_preprocessor, 3, predict_n = 5)
 TOP_1_acc = models.compute_TOP1_accuracy([pred[0] for pred in predictions], test_labels)
-TOP_5_acc = models.compute_TOPN_accuracy(predictions, val_labels)
+TOP_5_acc = models.compute_TOPN_accuracy(predictions, test_labels)
 
 print('\n\n-------------------------------------------------------------------------')
 print(f'test TOP1_accuracy ---> {TOP_1_acc}')
